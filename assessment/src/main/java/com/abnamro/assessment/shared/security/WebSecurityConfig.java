@@ -1,4 +1,4 @@
-package com.abnamro.assessment.configs.security;
+package com.abnamro.assessment.shared.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

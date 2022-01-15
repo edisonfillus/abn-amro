@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.abnamro.assessment.configs.security.MethodSecurityConfig;
+import com.abnamro.assessment.shared.security.MethodSecurityConfig;
 import com.abnamro.assessment.recipes.controllers.mappers.RecipeControllerMapperImpl;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIRequest;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIResponse;
