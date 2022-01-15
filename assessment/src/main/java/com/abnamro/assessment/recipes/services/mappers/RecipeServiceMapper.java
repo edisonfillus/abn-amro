@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface RecipeServiceMapper {
 
     @Mapping(target = "recipeId", ignore = true)
+    @Mapping(target = "recipeRef", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     Recipe mapToRecipe(CreateRecipeDTO source);
 

@@ -2,6 +2,7 @@ package com.abnamro.assessment.recipes.repositories.entities;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -18,6 +19,8 @@ import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.abnamro.assessment.recipes.repositories.entities.converters.RecipeRefConverter;
+import com.abnamro.assessment.shared.references.RecipeRef;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,6 +36,11 @@ public final class Recipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "RECIPE_ID")
     private Long recipeId;
+
+    @NotNull
+    @Column(name = "RECIPE_REF")
+    @Convert(converter = RecipeRefConverter.class)
+    private RecipeRef recipeRef;
 
     @Size(max = 100)
     @NotEmpty

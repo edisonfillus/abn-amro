@@ -3,6 +3,7 @@ package com.abnamro.assessment.mothers;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.abnamro.assessment.shared.references.RecipeRef;
 import com.abnamro.assessment.recipes.repositories.entities.Recipe;
 
 public class RecipesMother {
@@ -15,6 +16,7 @@ public class RecipesMother {
                      .isVegetarian(false)
                      .suitableFor(2)
                      .createdDate(SOME_DATE)
+                     .recipeRef(RecipeRef.randomRef())
                      .ingredients(List.of(
                          "600 grams fresh whole sardines",
                          "4 tablespoons extra virgin olive oil",
