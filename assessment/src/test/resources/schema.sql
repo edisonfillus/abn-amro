@@ -18,11 +18,13 @@ CREATE SCHEMA RECIPES;
 
 CREATE TABLE RECIPE (
      RECIPE_ID                      BIGINT              NOT NULL AUTO_INCREMENT,
+     RECIPE_REF                     VARCHAR(100)        NOT NULL,
      RECIPE_NAME                    VARCHAR(100)        NOT NULL,
      IS_VEGETARIAN                  BOOLEAN             NOT NULL,
      SUITABLE_FOR                   INT                 NOT NULL,
      CREATED_AT                     TIMESTAMP           NOT NULL,
-     constraint PK_RECIPE primary key (RECIPE_ID)
+     constraint PK_RECIPE primary key (RECIPE_ID),
+     constraint UN_RECIPE_REF unique (RECIPE_REF)
 );/* DEFAULT CHARSET=utf8 COMMENT 'Store recipes';*/
 
 /*==============================================================*/

@@ -24,6 +24,7 @@ ext {
 	testContainersVersion = "1.16.2"
 	lombokVersion = "1.18.22"
 	mapStructVersion = "1.4.2.Final"
+	springDocOpenApiVersion = "1.6.4"
 }
 
 dependencies {
@@ -52,6 +53,10 @@ dependencies {
 	implementation "org.mapstruct:mapstruct:${mapStructVersion}"
 	annotationProcessor "org.mapstruct:mapstruct-processor:${mapStructVersion}"
 	testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapStructVersion}"
+
+	// Springdoc
+	implementation "org.springdoc:springdoc-openapi-ui:${springDocOpenApiVersion}"
+	implementation "org.springdoc:springdoc-openapi-data-rest:${springDocOpenApiVersion}"
 }
 
 tasks.withType(JavaCompile) {
