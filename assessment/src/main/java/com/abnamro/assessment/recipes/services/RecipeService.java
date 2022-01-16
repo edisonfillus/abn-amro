@@ -31,6 +31,7 @@ public class RecipeService {
     @Transactional
     public RecipeDTO createRecipe(CreateRecipeDTO createRecipeDTO) {
         Recipe recipe = recipeServiceMapper.mapToRecipe(createRecipeDTO);
+        recipe.setRecipeRef(RecipeRef.randomRef());
         recipe.setCreatedDate(LocalDateTime.now(clock));
         recipeRepository.save(recipe);
         return recipeServiceMapper.mapToRecipeDTO(recipe);

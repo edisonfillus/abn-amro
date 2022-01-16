@@ -82,6 +82,7 @@ class RecipeServiceTest {
             // Then
             then(recipeRepository).should().save(any());
             assertThat(result.getCreatedDate()).isEqualTo(SOME_DATE);
+            assertThat(result.getRecipeRef()).isNotNull();
 
         }
     }
