@@ -3,8 +3,11 @@ package com.abnamro.assessment.shared.references;
 import java.util.Comparator;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public abstract class Reference implements Comparable<Reference> {
 
+    @JsonValue
     public abstract String getValue();
 
     @Override
