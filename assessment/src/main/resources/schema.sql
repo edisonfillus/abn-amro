@@ -26,6 +26,7 @@ CREATE TABLE RECIPE (
      constraint PK_RECIPE primary key (RECIPE_ID),
      constraint UN_RECIPE_REF unique (RECIPE_REF)
 );/* DEFAULT CHARSET=utf8 COMMENT 'Store recipes';*/
+CREATE INDEX IX_RECIPE_CREATED_AT ON RECIPE(CREATED_AT DESC);
 
 /*==============================================================*/
 /* Table: INGREDIENT                                            */

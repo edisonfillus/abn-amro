@@ -5,15 +5,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import com.abnamro.assessment.recipes.controllers.models.FindRecipeAPIResponse;
-import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
-import com.abnamro.assessment.shared.references.RecipeRef;
-import com.abnamro.assessment.shared.security.MethodSecurityConfig;
 import com.abnamro.assessment.recipes.controllers.mappers.RecipeControllerMapperImpl;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIRequest;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIResponse;
+import com.abnamro.assessment.recipes.controllers.models.FindRecipeAPIResponse;
+import com.abnamro.assessment.recipes.controllers.models.ListRecipesAPIResponse;
 import com.abnamro.assessment.recipes.services.RecipeService;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
+import com.abnamro.assessment.recipes.services.dtos.RecipeListViewDTO;
+import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
+import com.abnamro.assessment.shared.controllers.RestPageImpl;
+import com.abnamro.assessment.shared.references.RecipeRef;
+import com.abnamro.assessment.shared.security.MethodSecurityConfig;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,6 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -188,6 +196,56 @@ class RecipeControllerTest {
 
             // Then
             then(recipeService).should().findRecipe(SOME_RECIPE_REF);
+        }
+    }
+
+    @Nested
+    class FindAllRecipes {
+
+        @Test
+        void givenExistentRecipes_whenFind_thenReturnRecipesOK() throws Exception {
+
+            // Given
+            List<RecipeListViewDTO> result = List.of(
+                RecipeListViewDTO
+                    .builder()
+                    .name("Recipe 1")
+                    .recipeRef(RecipeRef.randomRef())
+                    .isVegetarian(false)
+                    .suitableFor(2)
+                    .createdDate(SOME_DATE)
+                    .build()
+                ,
+                RecipeListViewDTO
+                    .builder()
+                    .name("Recipe 2")
+                    .recipeRef(RecipeRef.randomRef())
+                    .isVegetarian(false)
+                    .suitableFor(2)
+                    .createdDate(SOME_DATE)
+                    .build()
+            );
+            Pageable pageable = PageRequest.of(0,20);
+
+            given(recipeService.findAllRecipes(pageable)).willReturn(new PageImpl<>(result,pageable,2));
+
+            // When
+            String resultBody = mockMvc
+                .perform(
+                    get(RecipeController.BASE_PATH).accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+            Page<ListRecipesAPIResponse> response = objectMapper.readValue(resultBody,
+                new TypeReference<RestPageImpl<ListRecipesAPIResponse>>() {});
+
+            // Then
+            then(recipeService).should().findAllRecipes(pageable);
+            assertThat(response.getTotalElements()).isEqualTo(2);
         }
     }
 

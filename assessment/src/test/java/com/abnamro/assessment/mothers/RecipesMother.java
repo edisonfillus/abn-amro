@@ -31,4 +31,27 @@ public class RecipesMother {
                      ));
     }
 
+    public static Recipe.RecipeBuilder roastedPorkLoinRecipe() {
+        return Recipe.builder()
+                     .name("Roasted pork loin")
+                     .isVegetarian(false)
+                     .suitableFor(8)
+                     .createdDate(SOME_DATE.plusDays(1))
+                     .recipeRef(RecipeRef.randomRef())
+                     .ingredients(List.of(
+                         "2 pounds boneless pork loin roast",
+                         "3 cloves garlic, minced",
+                         "¼ cup olive oil",
+                         "½ cup white wine",
+                         "salt and pepper to taste"
+                     ))
+                     .cookingInstructions(List.of(
+                         "Preheat oven to 175 degrees C.",
+                         "Crush garlic with salt and pepper, making a paste.",
+                         "Pierce meat with a sharp knife in several places and press the garlic paste into the openings.",
+                         "Place pork loin into oven. Cook until the pork is no longer pink in the center, about 1 hour.",
+                         "Heat the wine in the pan and stir to loosen browned bits of food on the bottom."
+                     ));
+    }
+
 }

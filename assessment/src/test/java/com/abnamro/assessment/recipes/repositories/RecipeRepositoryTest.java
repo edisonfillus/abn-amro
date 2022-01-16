@@ -1,23 +1,29 @@
 package com.abnamro.assessment.recipes.repositories;
 
 import javax.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
-import com.abnamro.assessment.recipes.repositories.entities.Recipe;
 import com.abnamro.assessment.mothers.RecipesMother;
+import com.abnamro.assessment.recipes.repositories.entities.Recipe;
+import com.abnamro.assessment.recipes.repositories.projections.RecipeListProjection;
 import com.abnamro.assessment.shared.references.RecipeRef;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 class RecipeRepositoryTest {
+
+    private static final LocalDateTime SOME_DATE = LocalDateTime.of(2020,1,1,10,0,0);
 
     @Autowired
     private TestEntityManager em;
@@ -131,7 +137,29 @@ class RecipeRepositoryTest {
             assertThat(found).isNull();
 
         }
+    }
 
+    @Nested
+    class FindAll {
+        @Test
+        void givenExistentRecipes_whenFindAll_thenReturnOrderedListByCreatedDate() {
+
+            // Given
+            Recipe recipe1 = RecipesMother.roastedSardinesRecipe().createdDate(SOME_DATE.minusDays(1)).build();
+            Recipe recipe2 = RecipesMother.roastedPorkLoinRecipe().createdDate(SOME_DATE.plusDays(1)).build();
+            em.persist(recipe1);
+            em.persist(recipe2);
+            em.flush();
+
+            // When
+            final Page<RecipeListProjection> result = recipeRepository.findAllByOrderByCreatedDateDesc(PageRequest.of(0, 20));
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getContent().get(0)).matches(recipe -> recipe.getRecipeRef().equals(recipe2.getRecipeRef()));
+            assertThat(result.getContent().get(1)).matches(recipe -> recipe.getRecipeRef().equals(recipe1.getRecipeRef()));
+
+        }
     }
 
 

@@ -1,8 +1,10 @@
 package com.abnamro.assessment.recipes.services.mappers;
 
+import com.abnamro.assessment.recipes.repositories.projections.RecipeListProjection;
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.abnamro.assessment.recipes.repositories.entities.Recipe;
+import com.abnamro.assessment.recipes.services.dtos.RecipeListViewDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -16,4 +18,5 @@ public interface RecipeServiceMapper {
 
     RecipeDTO mapToRecipeDTO(Recipe source);
 
+    RecipeListViewDTO mapToRecipeListViewDTO(RecipeListProjection source);
 }

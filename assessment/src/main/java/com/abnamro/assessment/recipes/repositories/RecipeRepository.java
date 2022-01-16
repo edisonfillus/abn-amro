@@ -3,6 +3,7 @@ package com.abnamro.assessment.recipes.repositories;
 import java.util.Optional;
 
 import com.abnamro.assessment.recipes.repositories.entities.Recipe;
+import com.abnamro.assessment.recipes.repositories.projections.RecipeListProjection;
 import com.abnamro.assessment.shared.references.RecipeRef;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,5 +18,7 @@ public interface RecipeRepository extends Repository<Recipe, Long> {
 
     @EntityGraph(attributePaths = {"ingredients", "cookingInstructions"}) // Eager load in find to optimize, as we return the full context
     Optional<Recipe> findRecipeByRecipeRef(RecipeRef recipeRef);
+
+    Page<RecipeListProjection> findAllByOrderByCreatedDateDesc(Pageable pageable);
 
 }

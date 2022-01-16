@@ -36,7 +36,8 @@ API’s could be able to retrieve recipes with following attributes:
 ###General
 * No need to support multiple languages / locales
 * No need to support multiple timezones, it will consider user inputted local time.
-* No need to support idempotent transactions. Retrying a create recipe will create a new one.
+* No need to support idempotent transactions. Retrying to create a recipe will create a new one.
+* No need to support concurrent updates control. All update transactions will override the recipe.
 
 ###Recipes
 * No cross-validation if a vegetarian recipe contains any no vegetarian ingredients.
@@ -66,6 +67,8 @@ API’s could be able to retrieve recipes with following attributes:
   Suggestion: Should have tracking of user changes, timestamps, IPs.
 * Delete is physically eliminating all the information.
   Suggestion: Only inactivate the recipe, keeping track of all changes/auditing information.
+* Using old school pagination. Using this form because it's supported by Spring Data and easy to implement. To scale it should be considered the use of cursors.
+* Using MapStruct with `unmappedTargetPolicy=ERROR`, in order to throw a compilation error in any case that it identifies that it can't convert 1 to 1. This way we guarantee that all properties are corrected mapped, and we can afford to not unit test the mappers.
 
 ##Security Measures
 * All user input is validated using Java Validators to avoid any kind of injection.

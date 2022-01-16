@@ -8,8 +8,11 @@ import java.util.Optional;
 
 import com.abnamro.assessment.mothers.RecipesMother;
 import com.abnamro.assessment.recipes.repositories.RecipeRepository;
+import com.abnamro.assessment.recipes.repositories.entities.Recipe;
+import com.abnamro.assessment.recipes.repositories.projections.RecipeListProjection;
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
+import com.abnamro.assessment.recipes.services.dtos.RecipeListViewDTO;
 import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
 import com.abnamro.assessment.recipes.services.mappers.RecipeServiceMapper;
 import com.abnamro.assessment.shared.references.RecipeRef;
@@ -21,17 +24,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceTest {
 
     private static final LocalDateTime SOME_DATE = LocalDateTime.of(2020,1,1,10,0,0);
+    private static final RecipeRef SOME_RECIPE_REF = RecipeRef.randomRef();
 
     @Spy
     private RecipeServiceMapper recipeMapper = Mappers.getMapper(RecipeServiceMapper.class);
@@ -89,14 +98,13 @@ class RecipeServiceTest {
         @Test
         void givenNonExistentRecipe_whenFind_thenReturnsEmpty() {
             // Given
-            RecipeRef recipeRef = RecipeRef.randomRef();
-            given(recipeRepository.findRecipeByRecipeRef(recipeRef)).willReturn(Optional.empty());
+            given(recipeRepository.findRecipeByRecipeRef(SOME_RECIPE_REF)).willReturn(Optional.empty());
 
             // When
-            Optional<RecipeDTO> result = recipeService.findRecipe(recipeRef);
+            Optional<RecipeDTO> result = recipeService.findRecipe(SOME_RECIPE_REF);
 
             // Then
-            then(recipeRepository).should().findRecipeByRecipeRef(recipeRef);
+            then(recipeRepository).should().findRecipeByRecipeRef(SOME_RECIPE_REF);
             assertThat(result).isEmpty();
 
         }
@@ -104,16 +112,38 @@ class RecipeServiceTest {
         @Test
         void givenExistentRecipe_whenFind_thenReturnRecipe() {
             // Given
-            RecipeRef recipeRef = RecipeRef.randomRef();
-            given(recipeRepository.findRecipeByRecipeRef(recipeRef))
-                .willReturn(Optional.of(RecipesMother.roastedSardinesRecipe().recipeRef(recipeRef).build()));
+            given(recipeRepository.findRecipeByRecipeRef(SOME_RECIPE_REF))
+                .willReturn(Optional.of(RecipesMother.roastedSardinesRecipe().recipeRef(SOME_RECIPE_REF).build()));
 
             // When
-            Optional<RecipeDTO> result = recipeService.findRecipe(recipeRef);
+            Optional<RecipeDTO> result = recipeService.findRecipe(SOME_RECIPE_REF);
 
             // Then
-            then(recipeRepository).should().findRecipeByRecipeRef(recipeRef);
-            assertThat(result).isPresent().map(RecipeDTO::getRecipeRef).get().isEqualTo(recipeRef);
+            then(recipeRepository).should().findRecipeByRecipeRef(SOME_RECIPE_REF);
+            assertThat(result).isPresent().map(RecipeDTO::getRecipeRef).get().isEqualTo(SOME_RECIPE_REF);
+
+        }
+    }
+
+    @Nested
+    class FindAllRecipes {
+
+        @Test
+        void givenExistentRecipes_whenFind_thenReturnRecipes() {
+            // Given
+            Pageable pageable = PageRequest.of(0,20);
+            RecipeListProjection recipe1 = mock(RecipeListProjection.class);
+            RecipeListProjection recipe2 = mock(RecipeListProjection.class);
+
+            given(recipeRepository.findAllByOrderByCreatedDateDesc(pageable))
+                .willReturn(new PageImpl<>(List.of(recipe1,recipe2),pageable,2));
+
+            // When
+            Page<RecipeListViewDTO> result = recipeService.findAllRecipes(pageable);
+
+            // Then
+            then(recipeRepository).should().findAllByOrderByCreatedDateDesc(pageable);
+            assertThat(result.getTotalElements()).isEqualTo(2);
 
         }
     }
@@ -124,14 +154,13 @@ class RecipeServiceTest {
         @Test
         void givenNoRecipe_whenDelete_thenThrowNotFoundException() {
             // Given
-            RecipeRef reference = RecipeRef.randomRef();
-            given(recipeRepository.deleteByRecipeRef(reference)).willReturn(0L);
+            given(recipeRepository.deleteByRecipeRef(SOME_RECIPE_REF)).willReturn(0L);
 
             // When
-            Throwable thrown = catchThrowable(() -> recipeService.deleteRecipeByReference(reference));
+            Throwable thrown = catchThrowable(() -> recipeService.deleteRecipeByReference(SOME_RECIPE_REF));
 
             // Then
-            assertThat(thrown).isInstanceOf(RecipeNotFoundException.class).hasMessageContaining(reference.getValue());
+            assertThat(thrown).isInstanceOf(RecipeNotFoundException.class).hasMessageContaining(SOME_RECIPE_REF.getValue());
 
         }
 
@@ -139,14 +168,13 @@ class RecipeServiceTest {
         void givenRecipeOnRepository_whenDelete_thenFinishSuccessful() {
 
             // Given
-            RecipeRef reference = RecipeRef.randomRef();
-            given(recipeRepository.deleteByRecipeRef(reference)).willReturn(1L);
+            given(recipeRepository.deleteByRecipeRef(SOME_RECIPE_REF)).willReturn(1L);
 
             // When
-            recipeService.deleteRecipeByReference(reference);
+            recipeService.deleteRecipeByReference(SOME_RECIPE_REF);
 
             // Then
-            then(recipeRepository).should().deleteByRecipeRef(reference);
+            then(recipeRepository).should().deleteByRecipeRef(SOME_RECIPE_REF);
 
         }
 
