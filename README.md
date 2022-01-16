@@ -57,7 +57,7 @@ API’s could be able to retrieve recipes with following attributes:
 * Ingredients and Cooking Instructions have its own tables. As there is only one editable string field, it was leveraged the JPA's `@ElementCollection` feature to avoid creating specific entities.
 * It's using a MySQL as database. Just because it's the most popular one. Choose to use a relational just because it's a general application type of database.
   Note: In order to scale it should use a most suitable NoSQL database to query, like Redis.
-* It's using Spring Data JPA. Just because it's more productive and eliminate a lot of SQL boilerplate to create an assessment.
+* It's using Spring Data JPA. Just because it's more productive and eliminate a lot of SQL boilerplate to create an assessment. Using Lazy Loading in entity collections by default and using `@EntityGraph` in queries that need the full object to reduce database round trips. 
 * It's not implementing idempotency in create method. In case of retrials, it will duplicate recipes with different identifiers.
   Suggestion: Use an idempotency that should be sent by the client, that should be used in retrials.
 * It's not using a concurrent update control. In case of concurrent transactions, one will override the others changes.
