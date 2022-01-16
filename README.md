@@ -35,7 +35,8 @@ API’s could be able to retrieve recipes with following attributes:
 
 ###General
 * No need to support multiple languages / locales
-* No need to support multiple timezones, it will consider user inputed local time.
+* No need to support multiple timezones, it will consider user inputted local time.
+* No need to support idempotent transactions. Retrying a create recipe will create a new one.
 
 ###Recipes
 * No cross-validation if a vegetarian recipe contains any no vegetarian ingredients.
@@ -52,23 +53,27 @@ API’s could be able to retrieve recipes with following attributes:
 * Instructions can be updated freely.
 
 ##System Design / Architecture Decisions
+* API is returning the date format as the requirements, but is strong advisable to return ISO8601 format in order to support internationalization.
 * Ingredients and Cooking Instructions have its own tables. As there is only one editable string field, it was leveraged the JPA's `@ElementCollection` feature to avoid creating specific entities.
 * It's using a MySQL as database. Just because it's the most popular one. Choose to use a relational just because it's a general application type of database.
   Note: In order to scale it should use a most suitable NoSQL database to query, like Redis.
 * It's using Spring Data JPA. Just because it's more productive and eliminate a lot of SQL boilerplate to create an assessment.
-* It's not using a concurrent update control. In case of concurrent transactions, one will override other changes.
-  Suggestion: Use a versioning field on recipe to implement an Optimistic Lock mechanism. In case of conflict, the api will return a 409 - Conflict.
+* It's not implementing idempotency in create method. In case of retrials, it will duplicate recipes with different identifiers.
+  Suggestion: Use an idempotency that should be sent by the client, that should be used in retrials.
+* It's not using a concurrent update control. In case of concurrent transactions, one will override the others changes.
+  Suggestion: Use a versioning field on recipe to either implement an Optimistic Lock mechanism and use as version control. The client should always send the version when updating. In case of conflict, the api will return a 409 - Conflict.
 * No auditing. There is no auditing tracking. As nothing mentioned in requirements about keeping user's and historical changes, not implementing it.
   Suggestion: Should have tracking of user changes, timestamps, IPs.
 * Delete is physically eliminating all the information.
   Suggestion: Only inactivate the recipe, keeping track of all changes/auditing information.
 
 ##Security Measures
+* All user input is validated using Java Validators to avoid any kind of injection.
 * Insecure Direct Object Reference: Created a `RecipeRef` using UUID to not expose the internal ID.
+* RegEx Denial of Service (ReDoS) attacks: First validate input type and size before testing regex.
 
 ##Running the application
 ### Dev mode
 ```shell
 ./gradlew bootRun
 ```
-

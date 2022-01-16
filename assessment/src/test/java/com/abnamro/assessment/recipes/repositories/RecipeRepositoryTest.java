@@ -1,11 +1,12 @@
 package com.abnamro.assessment.recipes.repositories;
 
 import javax.validation.ConstraintViolationException;
-
 import java.util.Collections;
+import java.util.Optional;
 
 import com.abnamro.assessment.recipes.repositories.entities.Recipe;
 import com.abnamro.assessment.mothers.RecipesMother;
+import com.abnamro.assessment.shared.references.RecipeRef;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +78,37 @@ class RecipeRepositoryTest {
             assertThat(found).usingRecursiveComparison().ignoringFields("recipeId").isEqualTo(toCreate);
 
         }
+    }
+
+    @Nested
+    class FindByReference {
+
+        @Test
+        void givenNonExistentRecipe_whenFind_thenReturnsEmpty() {
+
+            // When
+            Optional<Recipe> recipeReturned = recipeRepository.findRecipeByRecipeRef(RecipeRef.randomRef());
+
+            // Then
+            assertThat(recipeReturned).isEmpty();
+
+        }
+
+        @Test
+        void givenExistentRecipe_whenFind_thenReturnsRecipe() {
+            // Given
+            Recipe recipe = RecipesMother.roastedSardinesRecipe().build();
+            em.persist(recipe);
+            em.flush();
+
+            // When
+            Optional<Recipe> recipeReturned = recipeRepository.findRecipeByRecipeRef(recipe.getRecipeRef());
+
+            // Then
+            assertThat(recipeReturned).isPresent().hasValue(recipe);
+
+        }
+
     }
 
     @Nested

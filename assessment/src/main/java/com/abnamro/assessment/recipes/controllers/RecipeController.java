@@ -2,12 +2,12 @@ package com.abnamro.assessment.recipes.controllers;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
 import java.net.URI;
 
 import com.abnamro.assessment.recipes.controllers.mappers.RecipeControllerMapper;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIRequest;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIResponse;
+import com.abnamro.assessment.recipes.controllers.models.FindRecipeAPIResponse;
 import com.abnamro.assessment.recipes.services.RecipeService;
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,6 +66,26 @@ public class RecipeController {
         CreateRecipeAPIResponse response = recipeControllerMapper.mapToCreateRecipeAPIResponse(result);
         URI uri = uriBuilder.path("{recipeId}").buildAndExpand("1").toUri();
         return ResponseEntity.created(uri).body(response);
+    }
+
+    @Operation(
+        summary = "Find a Recipe by reference",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Recipe found"),
+            @ApiResponse(responseCode = "400", description = "Invalid recipe reference supplied", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+        }
+    )
+    @GetMapping("/{recipeRef}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<FindRecipeAPIResponse> findRecipe(
+        @PathVariable RecipeRef recipeRef
+    ) {
+        return ResponseEntity.of(
+            recipeService.findRecipe(recipeRef)
+                         .map(recipeControllerMapper::mapToFindRecipeAPIResponse)
+        );
     }
 
     @Operation(

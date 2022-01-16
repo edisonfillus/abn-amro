@@ -15,4 +15,5 @@ public interface RecipeServiceMapper {
     Recipe mapToRecipe(CreateRecipeDTO source);
 
     RecipeDTO mapToRecipeDTO(Recipe source);
+
 }

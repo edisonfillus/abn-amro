@@ -1,8 +1,8 @@
 package com.abnamro.assessment.recipes.services;
 
-import javax.transaction.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
@@ -13,6 +13,7 @@ import com.abnamro.assessment.recipes.services.mappers.RecipeServiceMapper;
 import com.abnamro.assessment.shared.references.RecipeRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RecipeService {
@@ -36,6 +37,13 @@ public class RecipeService {
         recipeRepository.save(recipe);
         return recipeServiceMapper.mapToRecipeDTO(recipe);
     }
+
+    @Transactional(readOnly = true)
+    public Optional<RecipeDTO> findRecipe(RecipeRef recipeRef) {
+        return recipeRepository.findRecipeByRecipeRef(recipeRef)
+                               .map(recipeServiceMapper::mapToRecipeDTO);
+    }
+
 
     @Transactional
     public void deleteRecipeByReference(RecipeRef recipeRef) {

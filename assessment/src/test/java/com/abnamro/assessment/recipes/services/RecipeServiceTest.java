@@ -1,26 +1,22 @@
 package com.abnamro.assessment.recipes.services;
 
-import javax.validation.ConstraintViolationException;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.abnamro.assessment.mothers.RecipesMother;
-import com.abnamro.assessment.recipes.repositories.entities.Recipe;
+import com.abnamro.assessment.recipes.repositories.RecipeRepository;
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
 import com.abnamro.assessment.recipes.services.mappers.RecipeServiceMapper;
-import com.abnamro.assessment.recipes.repositories.RecipeRepository;
 import com.abnamro.assessment.shared.references.RecipeRef;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
-import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -77,12 +73,47 @@ class RecipeServiceTest {
             given(clock.getZone()).willReturn(ZoneOffset.UTC);
 
             // When
-            final RecipeDTO result = recipeService.createRecipe(toCreate);
+            RecipeDTO result = recipeService.createRecipe(toCreate);
 
             // Then
             then(recipeRepository).should().save(any());
             assertThat(result.getCreatedDate()).isEqualTo(SOME_DATE);
             assertThat(result.getRecipeRef()).isNotNull();
+
+        }
+    }
+
+    @Nested
+    class FindRecipe {
+
+        @Test
+        void givenNonExistentRecipe_whenFind_thenReturnsEmpty() {
+            // Given
+            RecipeRef recipeRef = RecipeRef.randomRef();
+            given(recipeRepository.findRecipeByRecipeRef(recipeRef)).willReturn(Optional.empty());
+
+            // When
+            Optional<RecipeDTO> result = recipeService.findRecipe(recipeRef);
+
+            // Then
+            then(recipeRepository).should().findRecipeByRecipeRef(recipeRef);
+            assertThat(result).isEmpty();
+
+        }
+
+        @Test
+        void givenExistentRecipe_whenFind_thenReturnRecipe() {
+            // Given
+            RecipeRef recipeRef = RecipeRef.randomRef();
+            given(recipeRepository.findRecipeByRecipeRef(recipeRef))
+                .willReturn(Optional.of(RecipesMother.roastedSardinesRecipe().recipeRef(recipeRef).build()));
+
+            // When
+            Optional<RecipeDTO> result = recipeService.findRecipe(recipeRef);
+
+            // Then
+            then(recipeRepository).should().findRecipeByRecipeRef(recipeRef);
+            assertThat(result).isPresent().map(RecipeDTO::getRecipeRef).get().isEqualTo(recipeRef);
 
         }
     }
@@ -120,8 +151,5 @@ class RecipeServiceTest {
         }
 
     }
-
-
-
 
 }

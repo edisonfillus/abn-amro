@@ -3,8 +3,9 @@ package com.abnamro.assessment.recipes.controllers;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
+import com.abnamro.assessment.recipes.controllers.models.FindRecipeAPIResponse;
 import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
 import com.abnamro.assessment.shared.references.RecipeRef;
 import com.abnamro.assessment.shared.security.MethodSecurityConfig;
@@ -16,7 +17,6 @@ import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,6 +31,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RecipeControllerTest {
 
     private static final LocalDateTime SOME_DATE = LocalDateTime.of(2020,1,1,10,0,0);
+    private static final RecipeRef SOME_RECIPE_REF = RecipeRef.randomRef();
 
     @Autowired
     private MockMvc mockMvc;
@@ -81,6 +83,7 @@ class RecipeControllerTest {
                 .isVegetarian(false)
                 .suitableFor(2)
                 .createdDate(SOME_DATE)
+                .recipeRef(SOME_RECIPE_REF)
                 .ingredients(List.of(
                     "600 grams fresh whole sardines",
                     "4 tablespoons extra virgin olive oil",
@@ -120,38 +123,103 @@ class RecipeControllerTest {
     }
 
     @Nested
+    class FindRecipe {
+
+        @Test
+        void givenExistentRecipe_whenFind_thenReturnRecipeOK() throws Exception {
+
+            // Given
+            RecipeDTO result = RecipeDTO
+                .builder()
+                .name("Roasted sardines")
+                .recipeRef(SOME_RECIPE_REF)
+                .isVegetarian(false)
+                .suitableFor(2)
+                .createdDate(SOME_DATE)
+                .ingredients(List.of(
+                    "600 grams fresh whole sardines",
+                    "4 tablespoons extra virgin olive oil",
+                    "1,5 teaspoon of salt"
+                ))
+                .cookingInstructions(List.of(
+                    "Clean the sardines by removing any scales and rinse well",
+                    "Place the sardines on a tray",
+                    "Dizzle with olive oil and sprinkle the salt",
+                    "Preheat the oven to 250°C",
+                    "Cook the sardines for approximately 15 minutes until they get nice and roasted"
+                ))
+                .build();
+
+            given(recipeService.findRecipe(SOME_RECIPE_REF)).willReturn(Optional.of(result));
+
+            // When
+            String resultBody = mockMvc
+                .perform(
+                    get(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue())
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+            FindRecipeAPIResponse response = objectMapper.readValue(resultBody, FindRecipeAPIResponse.class);
+
+            // Then
+            then(recipeService).should().findRecipe(SOME_RECIPE_REF);
+            assertThat(response.getName()).isEqualTo(result.getName());
+        }
+
+        @Test
+        void givenNonExistentRecipe_whenFind_thenReturnNotFound() throws Exception {
+
+            // Given
+            given(recipeService.findRecipe(SOME_RECIPE_REF)).willReturn(Optional.empty());
+
+            // When
+            mockMvc
+                .perform(
+                    get(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue())
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
+            // Then
+            then(recipeService).should().findRecipe(SOME_RECIPE_REF);
+        }
+    }
+
+    @Nested
     class DeleteRecipe {
         @Test
         void givenNoRecipe_whenDelete_thenReturnNotFound() throws Exception {
 
             // Given
-            RecipeRef reference = RecipeRef.randomRef();
-            willThrow(new RecipeNotFoundException(reference)).given(recipeService).deleteRecipeByReference(eq(reference));
+            willThrow(new RecipeNotFoundException(SOME_RECIPE_REF)).given(recipeService).deleteRecipeByReference(eq(SOME_RECIPE_REF));
 
             // When
             mockMvc
-                .perform(delete(RecipeController.BASE_PATH + "/" + reference.getValue()))
+                .perform(delete(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
             // Then
-            then(recipeService).should().deleteRecipeByReference(eq(reference));
+            then(recipeService).should().deleteRecipeByReference(eq(SOME_RECIPE_REF));
         }
 
         @Test
         void givenRecipe_whenDelete_thenReturnOKNoContent() throws Exception {
 
-            // Given
-            RecipeRef reference = RecipeRef.randomRef();
-
             // When
             mockMvc
-                .perform(delete(RecipeController.BASE_PATH + "/" + reference.getValue()))
+                .perform(delete(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
             // Then
-            then(recipeService).should().deleteRecipeByReference(eq(reference));
+            then(recipeService).should().deleteRecipeByReference(eq(SOME_RECIPE_REF));
         }
     }
 
