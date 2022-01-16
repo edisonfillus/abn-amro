@@ -1,11 +1,13 @@
 package com.abnamro.assessment.recipes.repositories;
 
 import com.abnamro.assessment.recipes.repositories.entities.Recipe;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.abnamro.assessment.shared.references.RecipeRef;
+import org.springframework.data.repository.Repository;
 
-public interface RecipeRepository extends JpaRepository<Recipe, Long> {
+public interface RecipeRepository extends Repository<Recipe, Long> {
 
-    @Override
     Recipe save(Recipe entity);
+
+    Long deleteByRecipeRef(RecipeRef reference);
 
 }

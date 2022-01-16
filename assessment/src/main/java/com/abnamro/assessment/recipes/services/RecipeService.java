@@ -8,7 +8,9 @@ import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.abnamro.assessment.recipes.repositories.RecipeRepository;
 import com.abnamro.assessment.recipes.repositories.entities.Recipe;
+import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
 import com.abnamro.assessment.recipes.services.mappers.RecipeServiceMapper;
+import com.abnamro.assessment.shared.references.RecipeRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,14 @@ public class RecipeService {
         recipe.setCreatedDate(LocalDateTime.now(clock));
         recipeRepository.save(recipe);
         return recipeServiceMapper.mapToRecipeDTO(recipe);
+    }
+
+    @Transactional
+    public void deleteRecipeByReference(RecipeRef recipeRef) {
+        Long count = recipeRepository.deleteByRecipeRef(recipeRef);
+        if (count == 0) {
+            throw new RecipeNotFoundException(recipeRef);
+        }
     }
 
 }
