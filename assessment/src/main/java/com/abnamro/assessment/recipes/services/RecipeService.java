@@ -9,6 +9,7 @@ import com.abnamro.assessment.recipes.repositories.entities.Recipe;
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeListViewDTO;
+import com.abnamro.assessment.recipes.services.dtos.UpdateRecipeDTO;
 import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
 import com.abnamro.assessment.recipes.services.mappers.RecipeServiceMapper;
 import com.abnamro.assessment.shared.references.RecipeRef;
@@ -51,6 +52,14 @@ public class RecipeService {
                                .map(recipeServiceMapper::mapToRecipeListViewDTO);
     }
 
+    @Transactional
+    public RecipeDTO updateRecipe(RecipeRef recipeRef, UpdateRecipeDTO changes) {
+        Recipe recipe = recipeRepository.findRecipeByRecipeRef(recipeRef)
+                                        .orElseThrow(() -> new RecipeNotFoundException(recipeRef));
+        recipeServiceMapper.mapUpdateRecipeDTOIntoRecipe(changes, recipe);
+        recipeRepository.save(recipe);
+        return recipeServiceMapper.mapToRecipeDTO(recipe);
+    }
 
     @Transactional
     public void deleteRecipeByReference(RecipeRef recipeRef) {

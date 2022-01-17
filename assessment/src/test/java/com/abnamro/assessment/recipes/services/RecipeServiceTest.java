@@ -13,6 +13,7 @@ import com.abnamro.assessment.recipes.repositories.projections.RecipeListProject
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeListViewDTO;
+import com.abnamro.assessment.recipes.services.dtos.UpdateRecipeDTO;
 import com.abnamro.assessment.recipes.services.exceptions.RecipeNotFoundException;
 import com.abnamro.assessment.recipes.services.mappers.RecipeServiceMapper;
 import com.abnamro.assessment.shared.references.RecipeRef;
@@ -61,20 +62,16 @@ class RecipeServiceTest {
         void givenRecipe_whenSuccessful_thenReturnCreatedRecipe() {
             // Given
             CreateRecipeDTO toCreate = CreateRecipeDTO.builder()
-                                                      .name("Roasted sardines")
+                                                      .name("Some recipe")
                                                       .isVegetarian(false)
                                                       .suitableFor(2)
                                                       .ingredients(List.of(
-                                                          "600 grams fresh whole sardines",
-                                                          "4 tablespoons extra virgin olive oil",
-                                                          "1,5 teaspoon of salt"
+                                                          "My ingredient 1",
+                                                          "My ingredient 2"
                                                       ))
                                                       .cookingInstructions(List.of(
-                                                          "Clean the sardines by removing any scales and rinse well",
-                                                          "Place the sardines on a tray",
-                                                          "Dizzle with olive oil and sprinkle the salt",
-                                                          "Preheat the oven to 250°C",
-                                                          "Cook the sardines for approximately 15 minutes until they get nice and roasted"
+                                                          "1st instruction",
+                                                          "2nd instruction"
                                                       ))
                                                       .build();
 
@@ -121,6 +118,97 @@ class RecipeServiceTest {
             // Then
             then(recipeRepository).should().findRecipeByRecipeRef(SOME_RECIPE_REF);
             assertThat(result).isPresent().map(RecipeDTO::getRecipeRef).get().isEqualTo(SOME_RECIPE_REF);
+
+        }
+    }
+
+    @Nested
+    class UpdateRecipe {
+
+        @Test
+        void givenNonExistentRecipe_whenUpdate_thenThrows() {
+            // Given
+            given(recipeRepository.findRecipeByRecipeRef(SOME_RECIPE_REF)).willReturn(Optional.empty());
+            UpdateRecipeDTO updateRecipeDTO = UpdateRecipeDTO.builder().build();
+
+            // When
+            Throwable thrown = catchThrowable(() -> recipeService.updateRecipe(SOME_RECIPE_REF, updateRecipeDTO));
+
+            // Then
+            assertThat(thrown).isInstanceOf(RecipeNotFoundException.class).hasMessageContaining(SOME_RECIPE_REF.getValue());
+
+        }
+
+        @Test
+        void givenExistentRecipe_whenUpdateAllFields_thenSaveAndReturnUpdatedRecipe() {
+            // Given
+            given(recipeRepository.findRecipeByRecipeRef(SOME_RECIPE_REF))
+                .willReturn(Optional.of(RecipesMother.roastedSardinesRecipe().recipeRef(SOME_RECIPE_REF).build()));
+
+            UpdateRecipeDTO updateRecipeDTO = UpdateRecipeDTO.builder()
+                                                             .name("new name")
+                                                             .isVegetarian(true)
+                                                             .suitableFor(3)
+                                                             .ingredients(List.of("new ingredient"))
+                                                             .cookingInstructions(List.of("new cooking instruction"))
+                                                             .build();
+
+            RecipeDTO expected = RecipeDTO.builder()
+                                          .recipeRef(SOME_RECIPE_REF)
+                                          .createdDate(SOME_DATE)
+                                          .name("new name")
+                                          .isVegetarian(true)
+                                          .suitableFor(3)
+                                          .ingredients(List.of("new ingredient"))
+                                          .cookingInstructions(List.of("new cooking instruction"))
+                                          .build();
+
+            // When
+            RecipeDTO result = recipeService.updateRecipe(SOME_RECIPE_REF, updateRecipeDTO);
+
+            // Then
+            then(recipeRepository).should().findRecipeByRecipeRef(SOME_RECIPE_REF);
+            then(recipeRepository).should().save(any());
+            assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+
+        }
+
+        @Test
+        void givenExistentRecipe_whenUpdateOneField_thenSaveAndReturnUpdatedRecipe() {
+            // Given
+            Recipe original = Recipe.builder()
+                                    .recipeRef(SOME_RECIPE_REF)
+                                    .name("original name")
+                                    .isVegetarian(false)
+                                    .suitableFor(2)
+                                    .createdDate(SOME_DATE)
+                                    .ingredients(List.of("my ingredients"))
+                                    .cookingInstructions(List.of("my cooking instructions"))
+                                    .build();
+            given(recipeRepository.findRecipeByRecipeRef(SOME_RECIPE_REF))
+                .willReturn(Optional.of(original));
+
+            UpdateRecipeDTO updateRecipeDTO = UpdateRecipeDTO.builder()
+                                                             .name("new name")
+                                                             .build();
+
+            RecipeDTO expected = RecipeDTO.builder()
+                                          .recipeRef(SOME_RECIPE_REF)
+                                          .name("new name")
+                                          .isVegetarian(false)
+                                          .suitableFor(2)
+                                          .createdDate(SOME_DATE)
+                                          .ingredients(List.of("my ingredients"))
+                                          .cookingInstructions(List.of("my cooking instructions"))
+                                          .build();
+
+            // When
+            RecipeDTO result = recipeService.updateRecipe(SOME_RECIPE_REF, updateRecipeDTO);
+
+            // Then
+            then(recipeRepository).should().findRecipeByRecipeRef(SOME_RECIPE_REF);
+            then(recipeRepository).should().save(any());
+            assertThat(result).usingRecursiveComparison().isEqualTo(expected);
 
         }
     }

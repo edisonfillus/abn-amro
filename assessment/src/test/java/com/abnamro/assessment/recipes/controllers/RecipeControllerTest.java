@@ -8,8 +8,9 @@ import java.util.Optional;
 import com.abnamro.assessment.recipes.controllers.mappers.RecipeControllerMapperImpl;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIRequest;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIResponse;
-import com.abnamro.assessment.recipes.controllers.models.FindRecipeAPIResponse;
+import com.abnamro.assessment.recipes.controllers.models.RecipeAPIResponse;
 import com.abnamro.assessment.recipes.controllers.models.ListRecipesAPIResponse;
+import com.abnamro.assessment.recipes.controllers.models.UpdateRecipeAPIRequest;
 import com.abnamro.assessment.recipes.services.RecipeService;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeListViewDTO;
@@ -40,6 +41,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -172,7 +174,7 @@ class RecipeControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-            FindRecipeAPIResponse response = objectMapper.readValue(resultBody, FindRecipeAPIResponse.class);
+            RecipeAPIResponse response = objectMapper.readValue(resultBody, RecipeAPIResponse.class);
 
             // Then
             then(recipeService).should().findRecipe(SOME_RECIPE_REF);
@@ -197,6 +199,124 @@ class RecipeControllerTest {
             // Then
             then(recipeService).should().findRecipe(SOME_RECIPE_REF);
         }
+    }
+
+    @Nested
+    class UpdateRecipe {
+
+        @Test
+        void givenExistentRecipe_whenUpdateAllFields_thenUpdateAndReturnUpdatedRecipeOK() throws Exception {
+
+            // Given
+            UpdateRecipeAPIRequest request = UpdateRecipeAPIRequest.builder()
+                                                                   .name("new name")
+                                                                   .isVegetarian(false)
+                                                                   .suitableFor(2)
+                                                                   .ingredients(List.of("my ingredients"))
+                                                                   .cookingInstructions(List.of("my cooking instructions"))
+                                                                   .build();
+            RecipeDTO result = RecipeDTO.builder()
+                                        .recipeRef(SOME_RECIPE_REF)
+                                        .createdDate(SOME_DATE)
+                                        .name("new name")
+                                        .isVegetarian(false)
+                                        .suitableFor(2)
+                                        .ingredients(List.of("my ingredients"))
+                                        .cookingInstructions(List.of("my cooking instructions"))
+                                        .build();
+
+            given(recipeService.updateRecipe(eq(SOME_RECIPE_REF), any())).willReturn(result);
+
+            // When
+            String resultBody = mockMvc
+                .perform(
+                    patch(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+            RecipeAPIResponse response = objectMapper.readValue(resultBody, RecipeAPIResponse.class);
+
+            // Then
+            then(recipeService).should().updateRecipe(eq(SOME_RECIPE_REF), any());
+            assertThat(response.getName()).isEqualTo(result.getName());
+        }
+
+        @Test
+        void givenExistentRecipe_whenUpdateOneField_thenUpdateAndReturnUpdatedRecipeOK() throws Exception {
+
+            // Given
+            UpdateRecipeAPIRequest request = UpdateRecipeAPIRequest.builder()
+                                                                   .name("new name")
+                                                                   .build();
+            RecipeDTO result = RecipeDTO.builder()
+                                        .recipeRef(SOME_RECIPE_REF)
+                                        .createdDate(SOME_DATE)
+                                        .name("new name")
+                                        .isVegetarian(false)
+                                        .suitableFor(2)
+                                        .ingredients(List.of("my ingredients"))
+                                        .cookingInstructions(List.of("my cooking instructions"))
+                                        .build();
+
+            given(recipeService.updateRecipe(eq(SOME_RECIPE_REF), any())).willReturn(result);
+
+            // When
+            String resultBody = mockMvc
+                .perform(
+                    patch(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+            RecipeAPIResponse response = objectMapper.readValue(resultBody, RecipeAPIResponse.class);
+
+            // Then
+            then(recipeService).should().updateRecipe(eq(SOME_RECIPE_REF), any());
+            assertThat(response.getName()).isEqualTo(result.getName());
+        }
+
+        @Test
+        void givenNonExistentRecipe_whenUpdate_thenReturnNotFound() throws Exception {
+
+            // Given
+            UpdateRecipeAPIRequest request = UpdateRecipeAPIRequest.builder()
+                                                                   .name("new name")
+                                                                   .build();
+
+            willThrow(new RecipeNotFoundException(SOME_RECIPE_REF)).given(recipeService).updateRecipe(eq(SOME_RECIPE_REF), any());
+
+            // When
+            mockMvc
+                .perform(
+                    patch(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
+            // Then
+            then(recipeService).should().updateRecipe(eq(SOME_RECIPE_REF), any());
+        }
+
+
     }
 
     @Nested

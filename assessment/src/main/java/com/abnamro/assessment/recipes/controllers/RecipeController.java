@@ -9,11 +9,13 @@ import java.net.URI;
 import com.abnamro.assessment.recipes.controllers.mappers.RecipeControllerMapper;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIRequest;
 import com.abnamro.assessment.recipes.controllers.models.CreateRecipeAPIResponse;
-import com.abnamro.assessment.recipes.controllers.models.FindRecipeAPIResponse;
+import com.abnamro.assessment.recipes.controllers.models.RecipeAPIResponse;
 import com.abnamro.assessment.recipes.controllers.models.ListRecipesAPIResponse;
+import com.abnamro.assessment.recipes.controllers.models.UpdateRecipeAPIRequest;
 import com.abnamro.assessment.recipes.services.RecipeService;
 import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
+import com.abnamro.assessment.recipes.services.dtos.UpdateRecipeDTO;
 import com.abnamro.assessment.shared.references.RecipeRef;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -85,11 +88,31 @@ public class RecipeController {
     )
     @GetMapping("/{recipeRef}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<FindRecipeAPIResponse> findRecipe(@PathVariable RecipeRef recipeRef) {
+    public ResponseEntity<RecipeAPIResponse> findRecipe(@PathVariable RecipeRef recipeRef) {
         return ResponseEntity.of(
             recipeService.findRecipe(recipeRef)
-                         .map(recipeControllerMapper::mapToFindRecipeAPIResponse)
+                         .map(recipeControllerMapper::mapToRecipeAPIResponse)
         );
+    }
+
+    @Operation(
+        summary = "Update a Recipe",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Recipe updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+        }
+    )
+    @PatchMapping("/{recipeRef}")
+    @PreAuthorize("permitAll()")
+    public RecipeAPIResponse updateRecipe(
+        @PathVariable RecipeRef recipeRef,
+        @RequestBody @NotNull @Valid UpdateRecipeAPIRequest request
+    ) {
+        UpdateRecipeDTO updateRecipeDTO = recipeControllerMapper.mapToUpdateRecipeDTO(request);
+        RecipeDTO result = recipeService.updateRecipe(recipeRef, updateRecipeDTO);
+        return recipeControllerMapper.mapToRecipeAPIResponse(result);
     }
 
     @Operation(
