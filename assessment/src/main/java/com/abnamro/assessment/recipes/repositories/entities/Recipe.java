@@ -34,11 +34,11 @@ public final class Recipe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RECIPE_ID")
+    @Column(name = "RECIPE_ID", updatable = false)
     private Long recipeId;
 
     @NotNull
-    @Column(name = "RECIPE_REF")
+    @Column(name = "RECIPE_REF", updatable = false)
     @Convert(converter = RecipeRefConverter.class)
     private RecipeRef recipeRef;
 
