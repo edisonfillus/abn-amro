@@ -17,16 +17,18 @@ import com.abnamro.assessment.recipes.services.dtos.CreateRecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.RecipeDTO;
 import com.abnamro.assessment.recipes.services.dtos.UpdateRecipeDTO;
 import com.abnamro.assessment.shared.references.RecipeRef;
+import com.abnamro.assessment.users.repositories.entities.Role;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -58,18 +60,22 @@ public class RecipeController {
 
     @Operation(
         summary = "Create a new Recipe",
+        security = { @SecurityRequirement(name = "bearer-key") },
         responses = {
             @ApiResponse(responseCode = "201", description = "Recipe created"),
             @ApiResponse(responseCode = "400", description = "Invalid recipe supplied", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
         }
     )
     @PostMapping
-    @PreAuthorize("permitAll()")
+    @Secured(Role.ROLE_EDITOR)
     public ResponseEntity<CreateRecipeAPIResponse> createRecipe(
         @RequestBody @NotNull @Valid CreateRecipeAPIRequest request,
         UriComponentsBuilder uriBuilder
     ) {
+
         CreateRecipeDTO createRecipeDTO = recipeControllerMapper.mapToCreateRecipeDTO(request);
         RecipeDTO result = recipeService.createRecipe(createRecipeDTO);
         CreateRecipeAPIResponse response = recipeControllerMapper.mapToCreateRecipeAPIResponse(result);
@@ -79,15 +85,18 @@ public class RecipeController {
 
     @Operation(
         summary = "Find a Recipe by reference",
+        security = { @SecurityRequirement(name = "bearer-key") },
         responses = {
             @ApiResponse(responseCode = "200", description = "Recipe found"),
             @ApiResponse(responseCode = "400", description = "Invalid recipe reference supplied", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
             @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
         }
     )
     @GetMapping("/{recipeRef}")
-    @PreAuthorize("permitAll()")
+    @Secured({Role.ROLE_VIEWER, Role.ROLE_EDITOR})
     public ResponseEntity<RecipeAPIResponse> findRecipe(@PathVariable RecipeRef recipeRef) {
         return ResponseEntity.of(
             recipeService.findRecipe(recipeRef)
@@ -97,15 +106,18 @@ public class RecipeController {
 
     @Operation(
         summary = "Update a Recipe",
+        security = { @SecurityRequirement(name = "bearer-key") },
         responses = {
             @ApiResponse(responseCode = "200", description = "Recipe updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
             @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
         }
     )
     @PatchMapping("/{recipeRef}")
-    @PreAuthorize("permitAll()")
+    @Secured(Role.ROLE_EDITOR)
     public RecipeAPIResponse updateRecipe(
         @PathVariable RecipeRef recipeRef,
         @RequestBody @NotNull @Valid UpdateRecipeAPIRequest request
@@ -117,14 +129,17 @@ public class RecipeController {
 
     @Operation(
         summary = "List all recipes ordered by created date",
+        security = { @SecurityRequirement(name = "bearer-key") },
         responses = {
             @ApiResponse(responseCode = "200", description = "List returned"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination params supplied", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
         }
     )
     @GetMapping()
-    @PreAuthorize("permitAll()")
+    @Secured({Role.ROLE_VIEWER, Role.ROLE_EDITOR})
     public Page<ListRecipesAPIResponse> findAllRecipes(
         @RequestParam(value = "page", defaultValue = "0") @Positive @Max(Integer.MAX_VALUE) int page,
         @RequestParam(value = "size", defaultValue = "20") @Positive @Max(100) int size
@@ -136,15 +151,18 @@ public class RecipeController {
 
     @Operation(
         summary = "Delete an existent Recipe",
+        security = { @SecurityRequirement(name = "bearer-key") },
         responses = {
             @ApiResponse(responseCode = "204", description = "Recipe deleted"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
             @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
         }
     )
     @DeleteMapping("/{recipeRef}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    @PreAuthorize("permitAll()")
+    @Secured(Role.ROLE_EDITOR)
     public void delete(@PathVariable @Valid RecipeRef recipeRef) {
         recipeService.deleteRecipeByReference(recipeRef);
     }
