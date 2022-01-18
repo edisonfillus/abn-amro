@@ -48,7 +48,6 @@ jobs:
 
       - sonarcloud/scan
 
-
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.3
 
