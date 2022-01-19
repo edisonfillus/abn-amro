@@ -38,7 +38,7 @@ API’s could be able to retrieve recipes with following attributes:
 6. Describe at least 10 testing scenarios using GivenWhenThen style.
 7. The API's must be built ensuring that it is secured from security attacks.
 
-###Bonus
+### Bonus
 1. REST application should be secured by implementing authentication process (please provide
    credentials).
 2. Application should have an API documentation.
@@ -46,29 +46,29 @@ API’s could be able to retrieve recipes with following attributes:
 4. Use of container based solutions is an added advantage.
 5. Creating a single-page application illustrating the use of API.
 
-##Assumptions
+## Assumptions
 
-###General
+### General
 * No need to support multiple languages / locales
 * No need to support multiple timezones, it will consider user inputted local time.
 * No need to support idempotent transactions. Retrying to create a recipe will create a new one.
 * No need to support concurrent updates control. All update transactions will override the recipe.
 
-###Recipes
+### Recipes
 * No cross-validation if a vegetarian recipe contains any no vegetarian ingredients.
 * The date and time of creation can't be updated, all other fields can.
 
-###Ingredients
+### Ingredients
 * Ingredients will be text plain, as there is no reference about keeping ingredients as separate entities.
 * Ingredients should be persisted and recovered in the same order.
 * Ingredients can be updated freely.
 
-###Cooking Instructions
+### Cooking Instructions
 * Instructions will be text plain, without any relationship with other entities.
 * Instructions should be persisted and recovered in the same order.
 * Instructions can be updated freely.
 
-##System Design / Architecture Decisions
+## System Design / Architecture Decisions
 * API is returning the date format as the requirements, but is strong advisable to return ISO8601 format in order to support internationalization.
 * Ingredients and Cooking Instructions have its own tables. As there is only one editable string field, it was leveraged the JPA's `@ElementCollection` feature to avoid creating specific entities.
 * It's using a MySQL as database. Just because it's the most popular one. Choose to use a relational just because it's a general application type of database.
@@ -89,22 +89,37 @@ API’s could be able to retrieve recipes with following attributes:
 * Using environment variables to store passwords, secrets, and other sensitive information. Just for simplicity.
   Suggestion: Use a solution like HashiCorp Vault.
 
-##Security Measures
+## Security Measures
 * All user input is validated using Java Validators to avoid any kind of injection.
 * Insecure Direct Object Reference: Created a `RecipeRef` using UUID to not expose the internal ID.
 * RegEx Denial of Service (ReDoS) attacks: First validate input type and size before testing regex.
 * Passwords are being store on the database using BCrypt cryptography. Tokens are being issue using HMAC256.
+* To prevent basic Denial of Service (DoS) attacks, created a rate limiter of 10 request/second for each IP address on Nginx Reverse Proxy. If you try to do more than 10 requests you will receive a HTTP 503 Service Temporarily Unavailable.
+  ```webserver | 2022/01/19 15:37:42 [error] 26#26: *22 limiting requests, excess: 10.228 by zone "apiRateLimit", client: 192.168.128.1, server: nginx, request: "GET /api/v1/recipes?page=0&size=20 HTTP/1.1", host: "localhost", referrer: "http://localhost/swagger-ui/index.html"```
+  Suggestion: This configuration is better suitable to be sited on the firewall. Using Nginx just for demonstration.
 
-##Running the application
-###Dev mode
+## Running the application
+### Local mode
+This is run the standalone Spring application using an embedded H2 database.
 ```shell
 ./gradlew bootRun
 ```
-###API Documentation
+Application can be accessed in http://localhost:8080
+### Container mode
+This is run the application in containers, using a Nginx Reverse Proxy and MySQL database.
+```shell
+cd docker
+docker-compose up
 ```
-http://localhost:8080/swagger-ui/index.html
+Application can be accessed in http://localhost
+
+Note: The MySQL is configured to just keep the data inside the container. So, if the container is destroyed the database will be newly fresh.
+
+### API Documentation
 ```
-###Users
+http://localhost/swagger-ui/index.html
+```
+### Users
 ```javascript
 username: 'viewer', password: '123456', roles: ['VIEWER'] // Can only list and query recipes
 username: 'editor', password: '123456', roles: ['EDITOR'] // Can view, create, update and delete recipes
