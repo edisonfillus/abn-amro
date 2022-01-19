@@ -41,6 +41,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -148,6 +149,7 @@ class RecipeControllerTest {
                         .content(objectMapper.writeValueAsString(request))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
                 )
                 .andDo(print())
                 .andExpect(status().isCreated())
@@ -290,6 +292,7 @@ class RecipeControllerTest {
                         .content(objectMapper.writeValueAsString(request))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -332,6 +335,7 @@ class RecipeControllerTest {
                         .content(objectMapper.writeValueAsString(request))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -365,6 +369,7 @@ class RecipeControllerTest {
                         .content(objectMapper.writeValueAsString(request))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
                 )
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -454,7 +459,7 @@ class RecipeControllerTest {
 
             // When
             mockMvc
-                .perform(delete(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue()))
+                .perform(delete(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue()).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -468,7 +473,7 @@ class RecipeControllerTest {
 
             // When
             mockMvc
-                .perform(delete(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue()))
+                .perform(delete(RecipeController.BASE_PATH + "/" + SOME_RECIPE_REF.getValue()).with(csrf()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
