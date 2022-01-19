@@ -93,35 +93,59 @@ API’s could be able to retrieve recipes with following attributes:
 * All user input is validated using Java Validators to avoid any kind of injection.
 * Insecure Direct Object Reference: Created a `RecipeRef` using UUID to not expose the internal ID.
 * RegEx Denial of Service (ReDoS) attacks: First validate input type and size before testing regex.
-* Passwords are being store on the database using BCrypt cryptography. Tokens are being issue using HMAC256.
+* Passwords are being store on the database using BCrypt cryptography. 
+* All API endpoints demands user authentication JWT tokens that are being issue using HMAC256.
+* All API endpoints are secured using role-based security. Two roles exist: viewer and editor.
+* To prevent Cross-Site Request Forgery (CSRF) attacks, enabled the Spring Security CSRF mechanism to generate unique CSRF tokens per user, and demanding the same token to be sent as X-XSRF-TOKEN http header. Swagger UI was configured to send it automatically.
 * To prevent basic Denial of Service (DoS) attacks, created a rate limiter of 10 request/second for each IP address on Nginx Reverse Proxy. If you try to do more than 10 requests you will receive a HTTP 503 Service Temporarily Unavailable.
   ```webserver | 2022/01/19 15:37:42 [error] 26#26: *22 limiting requests, excess: 10.228 by zone "apiRateLimit", client: 192.168.128.1, server: nginx, request: "GET /api/v1/recipes?page=0&size=20 HTTP/1.1", host: "localhost", referrer: "http://localhost/swagger-ui/index.html"```
   Suggestion: This configuration is better suitable to be sited on the firewall. Using Nginx just for demonstration.
 
 ## Running the application
 ### Local mode
-This is run the standalone Spring application using an embedded H2 database.
+Execute the api as a standalone Spring application using an embedded H2 database:
 ```shell
+cd assessment
 ./gradlew bootRun
 ```
-Application can be accessed in http://localhost:8080
+Application can be accessed in http://localhost:8080/swagger-ui/index.html
 ### Container mode
-This is run the application in containers, using a Nginx Reverse Proxy and MySQL database.
+Execute the api in containers, including a Nginx Reverse Proxy and MySQL database.
 ```shell
 cd docker
 docker-compose up
 ```
-Application can be accessed in http://localhost
+NOTE: First time it can take some minutes, as it will have to download all the images, dependencies and build the project.
+
+When containers are up and running, application can be accessed in http://localhost/swagger-ui/index.html
 
 Note: The MySQL is configured to just keep the data inside the container. So, if the container is destroyed the database will be newly fresh.
 
 ### API Documentation
-```
-http://localhost/swagger-ui/index.html
-```
+Using the OpenAPI 3.0 generating the documentation from the code.
+The package has the Swagger UI embedded, so you can see the docs and use the endpoints.
+
 ### Users
 ```javascript
 username: 'viewer', password: '123456', roles: ['VIEWER'] // Can only list and query recipes
 username: 'editor', password: '123456', roles: ['EDITOR'] // Can view, create, update and delete recipes
 ```
+Use the /api/v1/login endpoint to login.
+
+After getting the token, to use it in Swagger UI is need to click in the Authorize button on top of page. All configurations are done to send it automatically as a http header authorization.
+
+### CI/CD Pipelines
+Using CircleCI as CI/CD tool. Currently, includes steps for build, testing, code analysis and publishing results to SonarCloud.
+
+Builds can be seen in here:
+https://app.circleci.com/pipelines/github/edisonfillus/abn-amro
+
+### Quality
+Using SonarQube, publishing the results in SonarCloud.
+
+Results can be seen in here:
+https://sonarcloud.io/summary/overall?id=abn-amro
+
+
+
 
