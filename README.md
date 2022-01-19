@@ -2,17 +2,17 @@
 
 [![CircleCI](https://circleci.com/gh/edisonfillus/abn-amro.svg?style=shield)](https://circleci.com/gh/edisonfillus/abn-amro)
 
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=alert_status)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=sqale_rating)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=reliability_rating)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=security_rating)]()
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=abn-amro)
 
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=bugs)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=code_smells)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=coverage)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=duplicated_lines_density)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=ncloc)]()
-[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=vulnerabilities)]()
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=bugs)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=coverage)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=abn-amro)
+[![Sonar](https://sonarcloud.io/api/project_badges/measure?project=abn-amro&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=abn-amro)
 
 
 ### Objective
