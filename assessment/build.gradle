@@ -98,8 +98,6 @@ sonarqube {
 		property "sonar.projectKey", "abn-amro"
 		property "sonar.projectName", "ABN Amro"
 		property "sonar.projectVersion", "${version}"
-		property "sonar.branch.name", "main"
-		property "sonar.branch.target", "main"
 		property "sonar.jacoco.reportPath", "$buildDir/jacoco/test.exec"
 		property "sonar.junit.reportsPath", "$buildDir/test-results/*/TEST-*.xml"
 	}
@@ -107,4 +105,8 @@ sonarqube {
 
 tasks.named('sonarqube').configure {
 	dependsOn test
+}
+
+bootRun {
+	args = ["--spring.profiles.active=local"] // bootRun execute always in local mode (h2)
 }
